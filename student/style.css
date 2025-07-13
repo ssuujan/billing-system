@@ -1,0 +1,129 @@
+.admission-status {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.status-approved {
+    color: #28a745;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-pending {
+    color: #ffc107;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-error {
+    color: #dc3545;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-note {
+    color: #6c757d;
+    font-size: 0.9em;
+    margin-top: 8px;
+    margin-left: 25px;
+}
+.restricted-profile {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.restricted-notice {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.contact-admin {
+    margin-top: 15px;
+    font-style: italic;
+    color: #6c757d;
+}
+/* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        /* Edit Mode Styles */
+        .editable-row {
+            display: none;
+        }
+        .edit-mode .view-row {
+            display: none;
+        }
+        .edit-mode .editable-row {
+            display: table-row;
+        }
+        
+        /* Password Field Styles */
+        .password-toggle {
+            cursor: pointer;
+            margin-left: 5px;
+            color: #666;
+        }
+        .password-field {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        /* Button Styles */
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-edit {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .btn-save {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-cancel {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        /* Status Indicators */
+        .status-approved {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-pending {
+            color: #ff9800;
+            font-weight: bold;
+        }   

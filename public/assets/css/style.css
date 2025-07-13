@@ -1,0 +1,128 @@
+   /* all body */
+   body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+/* for navigation bar */
+        .navbar {
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
+        }
+
+        .navbar nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .logo img {
+            height: 50px;
+        }
+
+        .clzname h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        ul li {
+            margin-left: 20px;
+        }
+
+        ul li a {
+            color: white;
+            text-decoration: none;
+        }
+
+        ul li a:hover {
+            text-decoration: underline;
+        }
+
+    /* for clz image and form container for responsive design and grid layout */
+            .container-outer {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            gap: 40px;
+            padding: 20px;
+        }
+
+        .image img {
+            max-width: 500px;
+            height: auto;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+        }
+        /* for managing the form container and its inner elements */
+        .container-inner {
+            max-width: 400px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .container-inner input,
+        .container-inner select {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+
+        .container-inner button {
+            margin-top: 10px;
+            padding: 10px;
+            width: 100%;
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .container-inner button:hover {
+            background-color: #007acc;
+        }
+        .regtext {
+            display: flex;
+            font-size: 18px;
+            justify-content: center;
+        }
+         .form-container {
+            display: flex;
+            gap: 20px;
+         }
+         /* for action buttons on the right side of the form */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 166px;
+            margin-top: 176px;
+        }
+
+        .action-buttons a {
+            padding: 12px 15px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .action-buttons a:hover {
+            background-color: #45a049;
+        }
+        .action-buttons a i {
+            margin-right: 8px;
+        }
