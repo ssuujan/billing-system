@@ -22,11 +22,11 @@ $admin = $_SESSION['user'];
 </head>
 <body>
     <div class="container">
-        <header>
+        <header class="header">
             <div class="logo">
                 <img src="../public/assets/images/logo.png" alt="Patan Multiple Campus Logo">
             </div>
-            <div>
+            <div class="header-text">
                 <h1>Patan Multiple Campus - Admin Panel</h1>
                 <h2>Welcome, <?= htmlspecialchars($admin['name']) ?>!</h2>
             </div>
