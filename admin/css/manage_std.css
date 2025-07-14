@@ -1,0 +1,96 @@
+
+    .student-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    .student-table th, .student-table td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+    }
+    .student-table th {
+        background-color: #002366;
+        color: white;
+    }
+    .student-table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+    .student-table tr:hover {
+        background-color: #ddd;
+    }
+    .status-pending {
+        color: #e67e22;
+        font-weight: bold;
+    }
+    .status-approved {
+        color: #27ae60;
+        font-weight: bold;
+    }
+    .status-rejected {
+        color: #e74c3c;
+        font-weight: bold;
+    }
+    .action-form {
+        display: inline;
+    }
+    .action-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        color: white;
+        margin: 2px;
+    }
+    .approve-btn {
+        background-color: #27ae60;
+    }
+    .reject-btn {
+        background-color: #e74c3c;
+    }
+    .edit-btn {
+        background-color: #3498db;
+    }
+    .error {
+        color: #e74c3c;
+        padding: 10px;
+        background-color: #fadbd8;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+.alert-success {
+    color: #3c763d;
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+}
+.alert-danger {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+}
+.status-pending {
+    color: #e67e22;
+    font-weight: bold;
+}
+.status-approved {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.action-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.action-form {
+    display: inline-block;
+    margin: 0 2px;
+}
+.action-btn {
+    width: 90px; /* Fixed width for consistent sizing */
+}
