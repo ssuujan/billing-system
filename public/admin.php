@@ -53,7 +53,7 @@
                     <p class="regtext">Use admin  account</p>
 
 
-                    <form method="post" action="login_process.php" autocomplete="off">
+                    <form method="post" action="admin_process.php" autocomplete="off">
                       
                         <label for="email">Email:</label>
                         <input type="email" id="email" name="email" required><br>

@@ -1,129 +1,144 @@
-   /* all body */
-   body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-/* for navigation bar */
-        .navbar {
-            background-color: #333;
-            color: white;
-            padding: 10px 0;
-        }
 
-        .navbar nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: auto;
-        }
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: grid;
+    grid-template-areas:
+        "header header"
+        "nav main"
+        "footer footer";
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
+}
+
+header {
+    grid-area: header;
+    background-color: #100e7f;
+    color: white;
+    padding: 8px 0;           /* Reduced from 20px 0 */
+    text-align: center;
+    display: grid;
+    grid-template-areas: 
+        ".logo .header-title ."
+        ".logo .header-title .";
+    grid-template-columns: 50px 1fr auto; /* Adjusted for smaller logo */
+    align-items: center;
+    height:auto;          /* Adjusted for smaller header */
+}
+
+.header-text h1 {
+    margin: 0;
+    font-size: 2em;           /* Adjust as needed for smaller text */
+    font-weight: normal;
+}
 
         .logo img {
             height: 50px;
+            margin-left: 50px; /* Adjusted for smaller logo */
         }
 
-        .clzname h1 {
-            margin: 0;
-            font-size: 24px;
-        }
 
-        ul {
-            list-style-type: none;
-            margin: 0;
+nav {
+    grid-area: nav;
+    background: #333;
+    padding: 15px;
+    min-width: 180px;
+}
+
+nav ul {
+    padding: 0;
+    list-style: none;
+}
+
+nav ul li {
+    margin: 10px 0;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+nav ul li a:hover {
+    text-decoration: underline;
+}
+
+main {
+    grid-area: main;
+    padding: 20px;
+    background: white;
+}
+
+footer {
+    grid-area: footer;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    width: 100%;
+}
+        header {
+            background-color: #002366;
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .logo img {
+            width: 60px;
+            margin-right: 20px;
+        }
+        nav ul {
+            list-style: none;
             padding: 0;
-            display: flex;
+            background-color: #333;
+            overflow: hidden;
+            margin: 0;
         }
-
-        ul li {
-            margin-left: 20px;
+        nav ul li {
+            float: left;
         }
-
-        ul li a {
+        nav ul li a {
+            display: block;
+            padding: 14px 20px;
             color: white;
             text-decoration: none;
         }
-
-        ul li a:hover {
-            text-decoration: underline;
+        nav ul li a:hover {
+            background-color: #575757;
         }
-
-    /* for clz image and form container for responsive design and grid layout */
-            .container-outer {
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-start;
-            gap: 40px;
+        main {
             padding: 20px;
+            background-color: white;
         }
-
-        .image img {
-            max-width: 500px;
-            height: auto;
-            border-radius: 10px;
-            border: 2px solid #ccc;
-        }
-        /* for managing the form container and its inner elements */
-        .container-inner {
-            max-width: 400px;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            background-color: #f9f9f9;
-        }
-
-        .container-inner input,
-        .container-inner select {
-            width: 100%;
-            padding: 8px;
-            margin: 8px 0;
-            box-sizing: border-box;
-        }
-
-        .container-inner button {
-            margin-top: 10px;
+        footer {
+            background-color: #002366;
+            color: white;
             padding: 10px;
-            width: 100%;
-            background-color: #1e90ff;
-            color: white;
-            border: none;
-            cursor: pointer;
+            text-align: center;
+            margin-top: 20px;
         }
-
-        .container-inner button:hover {
-            background-color: #007acc;
-        }
-        .regtext {
-            display: flex;
-            font-size: 18px;
-            justify-content: center;
-        }
-         .form-container {
-            display: flex;
+        .dashboard-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
-         }
-         /* for action buttons on the right side of the form */
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 166px;
-            margin:auto;
-            margin-top: 0;
         }
-
-        .action-buttons a {
-            padding: 12px 15px;
-            background-color: #4CAF50;
+        .dashboard-links a {
+            background-color: #0047ab;
             color: white;
             text-decoration: none;
-            border-radius: 4px;
+            padding: 20px;
+            border-radius: 8px;
             text-align: center;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s ease;
         }
-        .action-buttons a:hover {
-            background-color: #45a049;
-        }
-        .action-buttons a i {
-            margin-right: 8px;
+        .dashboard-links a:hover {
+            background-color: #0066cc;
         }
