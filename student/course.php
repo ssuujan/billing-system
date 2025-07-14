@@ -1,4 +1,4 @@
-?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,10 +12,10 @@
     <div class="container">
         <header class="header-text">
             <div class="logo">
-                <img src="../public/assets/images/logo.png" alt="Patan Multipal Campus Logo">
+                <img src="../public/assets/images/logo.png" alt="Patan Multiple Campus Logo">
             </div>
             <div class="header-text">
-                <h1>Patan Multipal Campus</h1>
+                <h1>Patan Multiple Campus</h1>
                 <h1>Welcome, <?= htmlspecialchars($user['name']) ?>!</h1>
             </div>
         </header>
@@ -29,9 +29,10 @@
         </nav>
         <main>
 
+
         </main>
          <footer>
-            <p>&copy; 2023 Patan Multipal Campus</p>
+            <p>&copy; 2023 Patan Multiple Campus</p>
         </footer>
     </div>
     </body>
