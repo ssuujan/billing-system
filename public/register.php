@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Insert with plaintext password (for school project only)
         // Automatically assign 'student' role
         $stmt = $conn->prepare("INSERT INTO users (name, email, password, phone, address, course, role) 
-                               VALUES (:name, :email, :password, :phone, :address, :course, 'student')");
+                               VALUES (:name, :email, :password, :phone, :address, 'none', 'student')");
         
         $success = $stmt->execute([
             ':name' => $post_data['name'],
@@ -69,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':password' => $post_data['password'],
             ':phone' => $post_data['phone'],
             ':address' => $post_data['address'],
-            ':course' => $post_data['course']
         ]);
 
         if ($success) {

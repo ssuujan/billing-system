@@ -1,4 +1,5 @@
 <?php
+session_name('STUDENT_SESSION');    
 session_start();
 
 // Redirect to login if not logged in
