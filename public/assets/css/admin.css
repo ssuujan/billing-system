@@ -37,6 +37,7 @@ header {
     margin: 0;
     font-size: 2em;           /* Adjust as needed for smaller text */
     font-weight: normal;
+    text-align: center;
 }
 
         .logo img {
@@ -62,11 +63,14 @@ nav ul li {
 }
 
 nav ul li a {
+    display: block;
+    padding: 14px 20px;
     color: white;
     text-decoration: none;
-}
+        }
 
 nav ul li a:hover {
+    background-color: #575757;
     text-decoration: underline;
 }
 
@@ -84,17 +88,6 @@ footer {
     padding: 10px 0;
     width: 100%;
 }
-        header {
-            background-color: #002366;
-            color: white;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-        }
-        .logo img {
-            width: 60px;
-            margin-right: 20px;
-        }
         nav ul {
             list-style: none;
             padding: 0;
@@ -118,13 +111,7 @@ footer {
             padding: 20px;
             background-color: white;
         }
-        footer {
-            background-color: #002366;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            margin-top: 20px;
-        }
+
         .dashboard-links {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

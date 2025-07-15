@@ -106,9 +106,10 @@
         .action-buttons {
             display: flex;
             flex-direction: column;
+            position: relative;
             gap: 10px;
-            width: 166px;
-            margin-top: 176px;
+            width: auto;
+            margin:auto;
         }
 
         .action-buttons a {

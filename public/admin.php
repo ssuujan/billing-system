@@ -6,14 +6,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <!-- <link rel="stylesheet" href="assets/css/style.css"> -->
-    <link rel="stylesheet" href="assets/css/admin.css"> 
-
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- <link rel="stylesheet" href="assets/css/admin.css">  -->
+    <style>
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-top: 82px;
+            margin-bottom: 19px;
+        }
+    </style>
     
 </head>
 
 <body>   
-      <script src="assets/javascript/valid.js"></script>   
+      <!-- <script src="assets/javascript/valid.js"></script>    -->
  
     <div class="navbar">
     <nav>

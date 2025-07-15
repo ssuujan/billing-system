@@ -1,4 +1,5 @@
 <?php
+session_name('STUDENT_SESSION'); // Use a unique session name for student dashboard
 session_start();
 if (!isset($_SESSION['user'])) {
     header("Location: ../public/login.php");

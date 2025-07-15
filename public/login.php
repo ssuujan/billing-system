@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 // Display success message if it exists
 if (isset($_SESSION['alert_success'])) {
