@@ -82,7 +82,7 @@ $admin = $_SESSION['user'];
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Address</th>
-                        <th>Status</th>
+                        <th>Admission</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
