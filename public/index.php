@@ -80,16 +80,6 @@ if (isset($_SESSION['alert'])) {
     <label for="address">Address:</label>
     <input type="text" id="address" name="address" autocomplete="street-address" required>
     
-    <!-- Course Selection -->
-    <label for="course">Select Course:</label>
-    <select id="course" name="course" required>
-        <option value="">-- Select a course --</option>
-        <option value="BIT">BIT</option>
-        <option value="BscIT">BscIT</option>
-        <option value="BBS">BBS</option>
-        <option value="BCA">BCA</option>
-    </select>
-    
     <button type="submit">Register</button>
 </form>
         </div>

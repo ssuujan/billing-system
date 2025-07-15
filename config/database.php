@@ -21,7 +21,7 @@ try {
         password VARCHAR(255) NOT NULL,
         phone VARCHAR(20) NOT NULL,
         address TEXT NOT NULL,
-        course VARCHAR(50) NOT NULL,
+        course VARCHAR(50) NOT NULL DEFAULT 'none',
         role VARCHAR(20) NOT NULL DEFAULT 'student',
         approved TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0=pending, 1=approved',
 

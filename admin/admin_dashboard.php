@@ -1,4 +1,5 @@
 <?php
+session_name('ADMIN_SESSION'); // Use a unique session name for admin dashboard
 session_start();
 
 // Restrict access to only admins
