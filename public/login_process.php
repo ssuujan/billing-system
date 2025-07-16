@@ -1,6 +1,6 @@
 <?php
 // filepath: c:\xampp\htdocs\project\public\login_process.php
-
+session_name('STUDENT_SESSION');
 session_start();
 require_once __DIR__ . '/../config/database.php';
 
