@@ -1,8 +1,7 @@
 <?php
-session_name('STUDENT_SESSION');    
+session_name('STUDENT_SESSION');
 session_start();
 
-// Redirect to login if not logged in
 if (!isset($_SESSION['user'])) {
     header("Location: ../public/login.php");
     exit();
@@ -10,32 +9,34 @@ if (!isset($_SESSION['user'])) {
 
 require_once __DIR__ . '/../config/database.php';
 
-try {
-    // Fetch the full user data from the database
-    $stmt = $conn->prepare("SELECT * FROM users WHERE id = :user_id");
-    $stmt->execute([':user_id' => $_SESSION['user']['id']]);
-    $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
+// Fetch user data
+$stmt = $conn->prepare("SELECT users.*, courses.course_name FROM users 
+                       LEFT JOIN courses ON users.course_id = courses.id 
+                       WHERE users.id = ?");
+$stmt->execute([$_SESSION['user']['id']]);
+$currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // ⚠️ If fetch failed, handle it gracefully
-    if (!$currentUser) {
-        $_SESSION['error'] = "User not found in database.";
-        header("Location: ../public/login.php");
-        exit();
-    }
-
-    // Default role if missing
-    if (!isset($currentUser['role'])) {
-        $currentUser['role'] = 'student';
-    }
-
-    // Update session with fresh user data
-    $_SESSION['user'] = $currentUser;
-
-} catch (PDOException $e) {
-    error_log("Database error: " . $e->getMessage());
-    $_SESSION['error'] = "Database error occurred. Please try again later.";
-    header("Location: dashboard.php");
+// Handle course selection
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_course'])) {
+    $course_id = $_POST['course_id'];
+    
+    $stmt = $conn->prepare("UPDATE users SET course_id = ? WHERE id = ?");
+    $stmt->execute([$course_id, $currentUser['id']]);
+    
+    $_SESSION['success'] = "Course selected successfully!";
+    header("Location: courses.php");
     exit();
+}
+
+// Fetch available courses
+$courses = $conn->query("SELECT * FROM courses ORDER BY course_name")->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch course structure if user has selected a course
+$courseStructure = [];
+if ($currentUser['course_id']) {
+    $stmt = $conn->prepare("SELECT * FROM course_subjects WHERE course_id = ? ORDER BY year_or_semester, subject_name");
+    $stmt->execute([$currentUser['course_id']]);
+    $courseStructure = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 ?>
 
@@ -70,6 +71,65 @@ try {
         </nav>
 
         <main>
+             
+        <main>
+            <h2>Course Selection</h2>
+            
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="alert alert-danger"><?= $_SESSION['error']; unset($_SESSION['error']); ?></div>
+            <?php endif; ?>
+            
+            <?php if (isset($_SESSION['success'])): ?>
+                <div class="alert alert-success"><?= $_SESSION['success']; unset($_SESSION['success']); ?></div>
+            <?php endif; ?>
+            
+            <?php if ($currentUser['course_id']): ?>
+                <div class="course-info">
+                    <h3>Your Selected Course: <?= $currentUser['course_name'] ?></h3>
+                    
+                    <div class="course-structure">
+                        <h4>Course Structure:</h4>
+                        <?php
+                        $currentSemester = null;
+                        foreach ($courseStructure as $subject):
+                            if ($subject['year_or_semester'] != $currentSemester):
+                                $currentSemester = $subject['year_or_semester'];
+                                echo "<h5>Year/Semester $currentSemester</h5><ul>";
+                            endif;
+                            echo "<li>{$subject['subject_name']}</li>";
+                        endforeach;
+                        if ($currentSemester) echo "</ul>";
+                        ?>
+                    </div>
+                </div>
+            <?php else: ?>
+                <form method="POST">
+                    <div class="form-group">
+                        <label>Select Your Course:</label>
+                        <select name="course_id" required>
+                            <option value="">-- Choose a course --</option>
+                            <?php foreach ($courses as $course): ?>
+                                <option value="<?= $course['id'] ?>">
+                                    <?= $course['course_name'] ?> (<?= $course['duration_type'] ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="submit" name="select_course" class="btn">Select Course</button>
+                </form>
+                
+                <div class="available-courses">
+                    <h3>Available Courses</h3>
+                    <?php foreach ($courses as $course): ?>
+                        <div class="course-card">
+                            <h4><?= $course['course_name'] ?></h4>
+                            <p>Duration: <?= $course['duration_type'] ?></p>
+                            <p><?= $course['description'] ?></p>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </main>
         </main>
 
         <footer>

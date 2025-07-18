@@ -1,5 +1,6 @@
 <?php
 session_name('ADMIN_SESSION');
+// Start the session
 session_start();
 
 // Restrict access to only admins

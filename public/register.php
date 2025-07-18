@@ -18,7 +18,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'confirm_password' => $_POST['confirm_password'] ?? '',
         'phone' => $_POST['phone'] ?? '',
         'address' => $_POST['address'] ?? '',
-        'course' => $_POST['course'] ?? ''
     ];
 
     // Validate required fields
@@ -60,8 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Insert with plaintext password (for school project only)
         // Automatically assign 'student' role
-        $stmt = $conn->prepare("INSERT INTO users (name, email, password, phone, address, course, role) 
-                               VALUES (:name, :email, :password, :phone, :address, 'none', 'student')");
+        $stmt = $conn->prepare("INSERT INTO users (name, email, password, phone, address, role) 
+                               VALUES (:name, :email, :password, :phone, :address, 'student')");
         
         $success = $stmt->execute([
             ':name' => $post_data['name'],
