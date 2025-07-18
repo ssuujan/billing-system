@@ -10,10 +10,13 @@ require_once __DIR__ . '/../config/database.php';
 
 // Get current user's data with approval check
 try {
-    $stmt = $conn->prepare("SELECT * FROM users WHERE id = :user_id");
+    $stmt = $conn->prepare("SELECT users.*, courses.course_name FROM users 
+                        LEFT JOIN courses ON users.course_id = courses.id 
+                        WHERE users.id = :user_id");
+
     $stmt->execute([':user_id' => $_SESSION['user']['id']]);
     $currentUser = $stmt->fetch();
-    
+
     if ($currentUser && (!isset($currentUser['approved']) || $currentUser['approved'] != 1)) {
         $currentUser = [
             'id' => $currentUser['id'],
@@ -24,7 +27,7 @@ try {
         ];
         $_SESSION['user'] = $currentUser;
     }
-    
+
     if ($currentUser && !isset($currentUser['role'])) {
         $currentUser['role'] = 'student';
     }
@@ -49,22 +52,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
             SET name = :name,
                 email = :email,
                 phone = :phone,
-                course = :course,
                 address = :address,
                 password = :password
             WHERE id = :user_id
         ");
-        
+
         $success = $stmt->execute([
             ':name' => $_POST['name'],
             ':email' => $_POST['email'],
             ':phone' => $_POST['phone'],
-            ':course' => $_POST['course'],
             ':address' => $_POST['address'],
             ':password' => $_POST['password'],
             ':user_id' => $currentUser['id']
         ]);
-        
+
         if ($success) {
             $_SESSION['user']['name'] = $_POST['name'];
             $_SESSION['success'] = "Profile updated successfully!";
@@ -81,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -88,8 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
     <link rel="stylesheet" href="../public/assets/css/dashboard.css">
     <link rel="stylesheet" href="../student/assets/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-   
+
 </head>
+
 <body>
     <div class="container">
         <header class="header">
@@ -111,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
                 <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </nav>
-        
+
         <main>
             <!-- Status Messages -->
             <?php if (isset($_SESSION['success'])): ?>
@@ -120,14 +123,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
                     <?php unset($_SESSION['success']); ?>
                 </div>
             <?php endif; ?>
-            
+
             <?php if (isset($_SESSION['error'])): ?>
                 <div class="alert error">
                     <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($_SESSION['error']) ?>
                     <?php unset($_SESSION['error']); ?>
                 </div>
             <?php endif; ?>
-            
+
             <!-- Admission Status -->
             <div class="status-container">
                 <h2>Admission Status</h2>
@@ -142,11 +145,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
                     <p>You will be able to access all features once your admission is approved.</p>
                 <?php endif; ?>
             </div>
-            
+
             <!-- Profile Information -->
             <div class="profile-info">
                 <h2>Profile Information</h2>
-                
+
                 <?php if (!$currentUser): ?>
                     <p>Your profile information could not be loaded.</p>
                 <?php else: ?>
@@ -175,11 +178,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
                                 <tr class="editable-row">
                                     <td><strong>Name</strong></td>
                                     <td>
-                                        <input type="text" name="name" autocomplete="off" value="<?= htmlspecialchars($currentUser['name'] ?? '') ?>" required>
+                                        <input type="text" name="name" autocomplete="off"
+                                            value="<?= htmlspecialchars($currentUser['name'] ?? '') ?>" required>
                                     </td>
                                     <td></td>
                                 </tr>
-                                
+
                                 <!-- Email -->
                                 <tr class="view-row">
                                     <td><strong>Email</strong></td>
@@ -189,11 +193,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
                                 <tr class="editable-row">
                                     <td><strong>Email</strong></td>
                                     <td>
-                                        <input type="email" name="email" autocomplete="off" value="<?= htmlspecialchars($currentUser['email'] ?? '') ?>" required>
+                                        <input type="email" name="email" autocomplete="off"
+                                            value="<?= htmlspecialchars($currentUser['email'] ?? '') ?>" required>
                                     </td>
                                     <td></td>
                                 </tr>
-                                
+
                                 <!-- Phone -->
                                 <tr class="view-row">
                                     <td><strong>Phone</strong></td>
@@ -203,25 +208,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
                                 <tr class="editable-row">
                                     <td><strong>Phone</strong></td>
                                     <td>
-                                        <input type="text" name="phone"autocomplete="off" value="<?= htmlspecialchars($currentUser['phone'] ?? '') ?>">
+                                        <input type="text" name="phone" autocomplete="off"
+                                            value="<?= htmlspecialchars($currentUser['phone'] ?? '') ?>">
                                     </td>
                                     <td></td>
                                 </tr>
-                                
+
                                 <!-- Course -->
                                 <tr class="view-row">
                                     <td><strong>Course</strong></td>
-                                    <td><?= htmlspecialchars($currentUser['course'] ?? 'Not set') ?></td>
+                                    <td><?= htmlspecialchars($currentUser['course_name'] ?? 'Not set') ?></td>
                                     <td></td>
                                 </tr>
                                 <tr class="editable-row">
                                     <td><strong>Course</strong></td>
                                     <td>
-                                        <input type="text" name="course" value="<?= htmlspecialchars($currentUser['course'] ?? '') ?>">
+                                        <input type="text" name="course_name"
+                                        value="<?= htmlspecialchars($currentUser['course_name'] ?? '') ?>" readonly>
                                     </td>
                                     <td></td>
                                 </tr>
-                                
+
                                 <!-- Address -->
                                 <tr class="view-row">
                                     <td><strong>Address</strong></td>
@@ -231,11 +238,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
                                 <tr class="editable-row">
                                     <td><strong>Address</strong></td>
                                     <td>
-                                        <input type="text" name="address" autocomplete="off"value="<?= htmlspecialchars($currentUser['address'] ?? '') ?>">
+                                        <input type="text" name="address" autocomplete="off"
+                                            value="<?= htmlspecialchars($currentUser['address'] ?? '') ?>">
                                     </td>
                                     <td></td>
                                 </tr>
-                                
+
                                 <!-- Password -->
                                 <tr class="view-row">
                                     <td><strong>Password</strong></td>
@@ -250,19 +258,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
                                 <tr class="editable-row">
                                     <td><strong>Password</strong></td>
                                     <td>
-                                        <input type="password" name="password" value="<?= htmlspecialchars($currentUser['password'] ?? '') ?>" id="password-input">
+                                        <input type="password" name="password"
+                                            value="<?= htmlspecialchars($currentUser['password'] ?? '') ?>"
+                                            id="password-input">
                                         <i class="fas fa-eye password-toggle" onclick="togglePasswordInputVisibility()"></i>
                                     </td>
                                     <td></td>
                                 </tr>
-                                
+
                                 <!-- Role (non-editable) -->
                                 <tr>
                                     <td><strong>Role</strong></td>
                                     <td><?= htmlspecialchars($currentUser['role'] ?? 'student') ?></td>
                                     <td></td>
                                 </tr>
-                                
+
                                 <!-- Approval Status (non-editable) -->
                                 <tr>
                                     <td><strong>Approval Status</strong></td>
@@ -275,7 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
                                     </td>
                                     <td></td>
                                 </tr>
-                                
+
                                 <!-- Form buttons (only shown in edit mode) -->
                                 <tr class="editable-row">
                                     <td colspan="3" style="text-align: center;">
@@ -309,13 +319,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
                 table.classList.remove('edit-mode');
             }
         }
-        
+
         // Toggle password visibility in view mode
         let isPasswordVisible = false;
         function togglePasswordVisibility() {
             const display = document.getElementById('password-display');
             const toggleIcon = document.querySelector('.view-row .password-toggle');
-            
+
             if (isPasswordVisible) {
                 display.textContent = '••••••••';
                 toggleIcon.classList.remove('fa-eye-slash');
@@ -325,15 +335,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
                 toggleIcon.classList.remove('fa-eye');
                 toggleIcon.classList.add('fa-eye-slash');
             }
-            
+
             isPasswordVisible = !isPasswordVisible;
         }
-        
+
         // Toggle password visibility in edit mode
         function togglePasswordInputVisibility() {
             const input = document.getElementById('password-input');
             const toggleIcon = document.querySelector('.editable-row .password-toggle');
-            
+
             if (input.type === 'password') {
                 input.type = 'text';
                 toggleIcon.classList.remove('fa-eye');
@@ -346,4 +356,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
         }
     </script>
 </body>
+
 </html>

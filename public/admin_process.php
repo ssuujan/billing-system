@@ -19,17 +19,15 @@ try {
     if ($stmt->rowCount() === 1) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // In production, use password_verify() with hashed passwords
-        if ($passwordInput === $user['password']) {
-            // Set complete user data in session (matches dashboard expectation)
+        // ✅ Correct password check
+        if (password_verify($passwordInput, $user['password'])) {
             $_SESSION['user'] = [
                 'id' => $user['id'],
                 'name' => $user['name'],
                 'email' => $user['email'],
                 'role' => $user['role']
             ];
-            
-            // Redirect to dashboard with absolute path
+
             header("Location: http://" . $_SERVER['HTTP_HOST'] . "/project/admin/admin_dashboard.php");
             exit;
         } else {
