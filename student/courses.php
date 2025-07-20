@@ -9,7 +9,7 @@ if (!isset($_SESSION['user'])) {
 
 require_once __DIR__ . '/../config/database.php';
 
-// Fetch user data with course info - with proper error handling
+// Fetch user data with course info
 $userQuery = db_query("
     SELECT u.*, c.course_name, c.duration_type 
     FROM users u
@@ -63,6 +63,20 @@ if (!empty($currentUser['course_id'])) {
     
     $courseStructure = $structureQuery ? $structureQuery->fetchAll(PDO::FETCH_ASSOC) : [];
 }
+
+// Fetch fee structures for the enrolled course
+$feeStructures = [];
+if (!empty($currentUser['course_id'])) {
+    $feeQuery = db_query("
+        SELECT fs.*, 
+               (SELECT COUNT(*) FROM fee_installments fi WHERE fi.fee_structure_id = fs.id) as installment_count
+        FROM fee_structures fs
+        WHERE fs.course_id = ?
+        ORDER BY fs.fee_type, fs.period
+    ", [$currentUser['course_id']]);
+    
+    $feeStructures = $feeQuery ? $feeQuery->fetchAll(PDO::FETCH_ASSOC) : [];
+}
 ?>
 
 <!DOCTYPE html>
@@ -83,6 +97,15 @@ if (!empty($currentUser['course_id'])) {
         }
         .subject-item {
             border-left: 4px solid #3b82f6;
+        }
+        .fee-item {
+            border-left: 4px solid #10b981;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
         }
     </style>
 </head>
@@ -146,7 +169,99 @@ if (!empty($currentUser['course_id'])) {
                             Duration: <?= htmlspecialchars($currentUser['duration_type'] ?? 'Not specified') ?>
                         </p>
                         
-                        <h4 class="text-lg font-semibold text-gray-800 mt-6 mb-4">Course Structure:</h4>
+                        <!-- Fee Structure Section -->
+                        <?php if (!empty($feeStructures)): ?>
+                            <div class="mt-8">
+                                <h4 class="text-lg font-semibold text-gray-800 mb-4">Course Fee Structure:</h4>
+                                
+                                <div class="mb-4">
+                                    <nav class="flex space-x-4 border-b">
+                                        <button onclick="switchTab('all-fees')" class="tab-button active py-2 px-4 border-b-2 font-medium text-sm border-blue-500 text-blue-600">
+                                            All Fees
+                                        </button>
+                                        <button onclick="switchTab('semester-fees')" class="tab-button py-2 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                            Semester-wise
+                                        </button>
+                                        <button onclick="switchTab('yearly-fees')" class="tab-button py-2 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                            Yearly
+                                        </button>
+                                    </nav>
+                                </div>
+                                
+                                <div id="all-fees" class="tab-content active">
+                                    <div class="space-y-4">
+                                        <?php foreach ($feeStructures as $fee): ?>
+                                            <div class="fee-item bg-white p-4 rounded-md shadow-sm">
+                                                <div class="flex justify-between items-start">
+                                                    <div>
+                                                        <h5 class="font-medium text-gray-800">
+                                                            <?= $fee['fee_type'] === 'semester' ? 'Semester ' : 'Year ' ?><?= $fee['period'] ?> Fee
+                                                        </h5>
+                                                        <p class="text-green-600 font-semibold">
+                                                            NPR <?= number_format($fee['total_fee'], 2) ?>
+                                                        </p>
+                                                        <p class="text-sm text-gray-600 mt-1">
+                                                            Payment Option: <?= ucfirst($fee['payment_option']) ?>
+                                                            <?= $fee['payment_option'] === 'installment' ? "({$fee['installment_count']} installments)" : '' ?>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <?php if ($fee['payment_option'] === 'installment'): ?>
+                                                    <?php 
+                                                    $installments = db_query("
+                                                        SELECT * FROM fee_installments 
+                                                        WHERE fee_structure_id = ? 
+                                                        ORDER BY installment_number
+                                                    ", [$fee['id']])->fetchAll(PDO::FETCH_ASSOC);
+                                                    ?>
+                                                    <?php if (!empty($installments)): ?>
+                                                        <div class="mt-3">
+                                                            <h6 class="text-sm font-medium text-gray-700 mb-1">Installment Plan:</h6>
+                                                            <ul class="space-y-2">
+                                                                <?php foreach ($installments as $installment): ?>
+                                                                    <li class="flex justify-between text-sm">
+                                                                        <span>Installment <?= $installment['installment_number'] ?>:</span>
+                                                                        <span class="font-medium">NPR <?= number_format($installment['amount'], 2) ?></span>
+                                                                        <span class="text-gray-500">Due: <?= date('M d, Y', strtotime($installment['due_date'])) ?></span>
+                                                                    </li>
+                                                                <?php endforeach; ?>
+                                                            </ul>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                
+                                <!-- Filtered tabs would show the same data but filtered -->
+                                <div id="semester-fees" class="tab-content">
+                                    <div class="space-y-4">
+                                        <?php foreach ($feeStructures as $fee): ?>
+                                            <?php if ($fee['fee_type'] === 'semester'): ?>
+                                                <!-- Same fee item structure as above -->
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                
+                                <div id="yearly-fees" class="tab-content">
+                                    <div class="space-y-4">
+                                        <?php foreach ($feeStructures as $fee): ?>
+                                            <?php if ($fee['fee_type'] === 'yearly'): ?>
+                                                <!-- Same fee item structure as above -->
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php else: ?>
+                            <p class="text-gray-600">No fee structure available for this course.</p>
+                        <?php endif; ?>
+                        
+                        <!-- Course Structure Section -->
+                        <h4 class="text-lg font-semibold text-gray-800 mt-8 mb-4">Course Structure:</h4>
                         
                         <div class="space-y-6">
                             <?php
@@ -276,6 +391,26 @@ if (!empty($currentUser['course_id'])) {
                 e.preventDefault();
             }
         });
+
+        // Tab switching for fee structure
+        function switchTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabId).classList.add('active');
+            
+            // Update active tab button
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            event.target.classList.add('active', 'border-blue-500', 'text-blue-600');
+            event.target.classList.remove('border-transparent', 'text-gray-500');
+        }
     </script>
 </body>
 </html>

@@ -81,7 +81,7 @@ $admin = $_SESSION['user'];
                         <p class="text-gray-600 mt-2">Set up course fees</p>
                     </a>
                     
-                    <a href="student_billing.php" class="dashboard-card bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg">
+                    <a href="student_bills.php" class="dashboard-card bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg">
                         <div class="text-blue-600 mb-3">
                             <i class="fas fa-file-invoice-dollar fa-3x"></i>
                         </div>
