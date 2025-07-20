@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_name('ADMIN_SESSION');
 session_start();
 
@@ -87,7 +89,9 @@ foreach ($courses as $course) {
     <meta charset="UTF-8">
     <title>Manage Courses</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="./css/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
     <style>
         .course-card {
             transition: all 0.3s ease;
@@ -121,9 +125,9 @@ foreach ($courses as $course) {
                 </div>
                 <nav>
                     <ul class="flex space-x-6">
-                        <li><a href="admin_dashboard.php" class="font-bold text-blue-300"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</a></li>
+                        <li><a href="admin_dashboard.php" class="hover:text-blue-300"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</a></li>
                         <li><a href="manage_students.php" class="hover:text-blue-300"><i class="fas fa-users mr-2"></i>Students</a></li>
-                        <li><a href="manage_courses.php" class="hover:text-blue-300"><i class="fas fa-book mr-2"></i>Courses</a></li>
+                        <li><a href="manage_courses.php" class="font-bold text-blue-300"><i class="fas fa-book mr-2"></i>Courses</a></li>
                         <li><a href="logout.php" class="hover:text-blue-300"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a></li>
                     </ul>
                 </nav>
@@ -354,7 +358,7 @@ foreach ($courses as $course) {
             const container = document.getElementById('subject-container');
             const div = document.createElement('div');
             div.className = 'subject-pair flex space-x-4';
-            div.innerHTML = 
+            div.innerHTML = `
                 <div class="flex-1">
                     <input type="text" name="subjects[]" placeholder="Subject name" 
                         class="w-full px-4 py-2 border rounded-md" required>

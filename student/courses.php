@@ -121,13 +121,16 @@ if (!empty($currentUser['course_id'])) {
                         <p class="text-blue-200">Welcome, <?= htmlspecialchars($currentUser['name'] ?? 'Student') ?></p>
                     </div>
                 </div>
-                <nav>
+  <nav>
                     <ul class="flex space-x-6">
-                        <li><a href="dashboard.php" class="hover:text-blue-300"><i class="fas fa-user mr-2"></i>Profile</a></li>
-                        <li><a href="courses.php" class="font-bold text-blue-300"><i class="fas fa-book mr-2"></i>Courses</a></li>
+                        <li><a href="dashboard.php" class="font-bold text-blue-300"><i class="fas fa-user mr-2"></i>Profile</a></li>
+                        <?php if (isset($currentUser['approved']) && $currentUser['approved'] == 1): ?>
+                            <li><a href="courses.php" class="hover:text-blue-300"><i class="fas fa-book mr-2"></i>Courses</a></li>
+                            <li><a href="bills_user.php" class="hover:text-blue-300"><i class="fas fa-file-invoice-dollar mr-2"></i>Bills</a></li>
+                            <?php endif; ?>
                         <li><a href="logout.php" class="hover:text-blue-300"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a></li>
                     </ul>
-                </nav>
+                    </nav>
             </div>
         </header>
 
