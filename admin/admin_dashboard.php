@@ -18,6 +18,7 @@ $admin = $_SESSION['user'];
     <title>Admin Dashboard - Patan Multiple Campus</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        <link href="./css/tailwind.min.css" rel="stylesheet">
     <style>
         .dashboard-card {
             transition: all 0.3s ease;
