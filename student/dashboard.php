@@ -86,8 +86,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_values'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="../student/css/tailwind.min.css?v=<?= time() ?>" rel="stylesheet">
+    <link rel="stylesheet" href="../student/css/all.min.css?v=<?= time() ?>">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> -->
     <style>
         .password-toggle { cursor: pointer; }
         .editable-row { display: none; }

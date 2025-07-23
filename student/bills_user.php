@@ -109,7 +109,8 @@ $paymentStatus = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Bills - Patan Multiple Campus</title>
     <link href="../student/css/tailwind.min.css?v=<?= time() ?>" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../student/css/all.min.css?v=<?= time() ?>">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> -->
     <style>
         .payment-status-pending {
             background-color: #fef2f2;
