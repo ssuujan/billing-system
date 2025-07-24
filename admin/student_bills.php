@@ -170,12 +170,8 @@ $currentTab = $_GET['tab'] ?? 'payments';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Bills - Patan Multiple Campus</title>
     <link href="./css/tailwind.min.css" rel="stylesheet">
-<<<<<<< HEAD
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-=======
     <link rel="stylesheet" href="css/all.min.css">
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> -->
->>>>>>> 41a0ed54f9f0047c7a9527fdc43ad634b52d81f7
     <style>
         .payment-status-pending {
             background-color: #fef2f2;
