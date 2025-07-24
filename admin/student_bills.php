@@ -10,13 +10,13 @@ require_once __DIR__ . '/../config/database.php';
 $admin = $_SESSION['user'];
 
 $students = db_query("
-        SELECT u.id, u.name, u.email, c.course_name, c.id as course_id
-        FROM users u
-        LEFT JOIN courses c ON u.course_id = c.id
-        WHERE u.role = 'student' AND u.approved = 1
-    ")->fetchAll();
+    SELECT u.id, u.name, u.email, c.course_name, c.id as course_id
+    FROM users u
+    LEFT JOIN courses c ON u.course_id = c.id
+    WHERE u.role = 'student' AND u.approved = 1
+")->fetchAll();
 
-// Handle viewing a specific student's payments using both ID and email
+// Handle viewing a specific student's payments
 $selectedStudentId = $_GET['student_id'] ?? null;
 $selectedStudentEmail = $_GET['student_email'] ?? null;
 $student = null;
@@ -25,38 +25,34 @@ $paymentStatus = null;
 $feeStructures = [];
 
 if ($selectedStudentId && $selectedStudentEmail) {
-    // Get student details by both ID and email for precise identification
     $student = db_query("
-            SELECT u.*, c.course_name, c.id as course_id 
-            FROM users u
-            LEFT JOIN courses c ON u.course_id = c.id
-            WHERE u.id = ? AND u.email = ?
-        ", [$selectedStudentId, $selectedStudentEmail])->fetch();
+        SELECT u.*, c.course_name, c.id as course_id 
+        FROM users u
+        LEFT JOIN courses c ON u.course_id = c.id
+        WHERE u.id = ? AND u.email = ?
+    ", [$selectedStudentId, $selectedStudentEmail])->fetch();
 
     if ($student) {
-        // Get fee structures for the student's course
         $feeStructures = db_query("
-                SELECT fs.*, 
-                    (SELECT COUNT(*) FROM student_bills 
-                        WHERE student_id = ? AND fee_structure_id = fs.id) as bill_count
-                FROM fee_structures fs
-                WHERE fs.course_id = ?
-                ORDER BY fs.fee_type, fs.period
-            ", [$student['id'], $student['course_id']])->fetchAll();
+            SELECT fs.*, 
+                (SELECT COUNT(*) FROM student_bills 
+                 WHERE student_id = ? AND fee_structure_id = fs.id) as bill_count
+            FROM fee_structures fs
+            WHERE fs.course_id = ?
+            ORDER BY fs.fee_type, fs.period
+        ", [$student['id'], $student['course_id']])->fetchAll();
 
-        // Get all bills for the student
         $studentPayments = db_query("
-                SELECT sb.*, fs.fee_type, fs.period, fs.payment_option, c.course_name,
-                    (SELECT SUM(amount) FROM student_bills WHERE student_id = ? AND status = 'paid') as total_paid,
-                    (SELECT SUM(amount) FROM student_bills WHERE student_id = ?) as total_billed
-                FROM student_bills sb
-                JOIN fee_structures fs ON sb.fee_structure_id = fs.id
-                JOIN courses c ON fs.course_id = c.id
-                WHERE sb.student_id = ?
-                ORDER BY sb.due_date ASC
-            ", [$student['id'], $student['id'], $student['id']])->fetchAll();
+            SELECT sb.*, fs.fee_type, fs.period, fs.payment_option, c.course_name,
+                (SELECT SUM(amount) FROM student_bills WHERE student_id = ? AND status = 'paid') as total_paid,
+                (SELECT SUM(amount) FROM student_bills WHERE student_id = ?) as total_billed
+            FROM student_bills sb
+            JOIN fee_structures fs ON sb.fee_structure_id = fs.id
+            JOIN courses c ON fs.course_id = c.id
+            WHERE sb.student_id = ?
+            ORDER BY sb.due_date ASC
+        ", [$student['id'], $student['id'], $student['id']])->fetchAll();
 
-        // Calculate payment status
         if (!empty($studentPayments)) {
             $totalBilled = $studentPayments[0]['total_billed'];
             $totalPaid = $studentPayments[0]['total_paid'];
@@ -76,30 +72,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generate_bill'])) {
     try {
         $conn->beginTransaction();
 
-        // Get student by email
         $student = db_query("SELECT id FROM users WHERE email = ?", [$_POST['student_email']])->fetch();
         if (!$student) {
             throw new Exception("Student not found");
         }
 
-        // Get fee structure details
         $feeStructure = db_query("SELECT * FROM fee_structures WHERE id = ?", [$_POST['fee_structure_id']])->fetch();
         if (!$feeStructure) {
             throw new Exception("Fee structure not found");
         }
 
-        // Check if bill already exists
         $existingBill = db_query("
-                SELECT id FROM student_bills 
-                WHERE student_id = ? AND fee_structure_id = ?
-                LIMIT 1
-            ", [$student['id'], $_POST['fee_structure_id']])->fetch();
+            SELECT id FROM student_bills 
+            WHERE student_id = ? AND fee_structure_id = ?
+            LIMIT 1
+        ", [$student['id'], $_POST['fee_structure_id']])->fetch();
 
         if ($existingBill) {
             throw new Exception("A bill for this fee structure already exists for this student");
         }
 
-        // Create bill record
         db_query("INSERT INTO student_bills 
                 (student_id, fee_structure_id, amount, due_date, status) 
                 VALUES (?, ?, ?, ?, 'unpaid')", [
@@ -109,13 +101,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generate_bill'])) {
             $_POST['due_date']
         ]);
 
-        // If installments, create installment bills
         if ($feeStructure['payment_option'] === 'installment') {
             $installments = db_query("
-                    SELECT * FROM fee_installments 
-                    WHERE fee_structure_id = ?
-                    ORDER BY installment_number
-                ", [$feeStructure['id']])->fetchAll();
+                SELECT * FROM fee_installments 
+                WHERE fee_structure_id = ?
+                ORDER BY installment_number
+            ", [$feeStructure['id']])->fetchAll();
 
             foreach ($installments as $installment) {
                 db_query("INSERT INTO student_bills 
@@ -142,10 +133,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generate_bill'])) {
 }
 
 // Handle bill payment status update
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_paid'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        db_query("UPDATE student_bills SET status = 'paid', paid_at = NOW() WHERE id = ?", [$_POST['bill_id']]);
-        $_SESSION['success'] = "Bill marked as paid successfully!";
+        if (isset($_POST['mark_paid'])) {
+            db_query("UPDATE student_bills SET status = 'paid', paid_at = NOW(), payment_verified = 1 WHERE id = ?", [$_POST['bill_id']]);
+            $_SESSION['success'] = "Payment verified successfully!";
+        } elseif (isset($_POST['mark_rejected'])) {
+            db_query("UPDATE student_bills SET status = 'rejected', payment_verified = 0 WHERE id = ?", [$_POST['bill_id']]);
+            $_SESSION['success'] = "Payment rejected successfully!";
+        }
+
         header("Location: student_bills.php?student_email=" . urlencode($_POST['student_email']) . "&tab=payments");
         exit();
     } catch (PDOException $e) {
@@ -155,8 +152,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_paid'])) {
     }
 }
 
-// Get unpaid bills count for the badge
-$unpaidCount = db_query("SELECT COUNT(*) FROM student_bills WHERE status = 'unpaid'")->fetchColumn();
+// Get unpaid bills count for the badge (includes pending verification)
+$unpaidCount = db_query("
+    SELECT COUNT(*) FROM student_bills 
+    WHERE status IN ('unpaid', 'pending_verification')
+")->fetchColumn();
 
 // Get current tab from URL
 $currentTab = $_GET['tab'] ?? 'payments';
@@ -181,6 +181,14 @@ $currentTab = $_GET['tab'] ?? 'payments';
             background-color: #f0fdf4;
         }
 
+        .payment-status-pending_verification {
+            background-color: #eff6ff;
+        }
+
+        .payment-status-rejected {
+            background-color: #fff1f2;
+        }
+
         .progress-bar {
             height: 1.5rem;
             background-color: #e5e7eb;
@@ -200,6 +208,12 @@ $currentTab = $_GET['tab'] ?? 'payments';
 
         .tab-content.active {
             display: block;
+        }
+
+        .proof-image {
+            max-width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
         }
     </style>
 </head>
@@ -337,9 +351,34 @@ $currentTab = $_GET['tab'] ?? 'payments';
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($studentPayments as $payment): ?>
-                                                <tr
-                                                    class="border-b <?= $payment['status'] === 'paid' ? 'payment-status-paid' : 'payment-status-pending' ?>">
+                                            <?php foreach ($studentPayments as $payment):
+                                                $statusClass = '';
+                                                $statusText = '';
+                                                $statusColor = '';
+
+                                                switch ($payment['status']) {
+                                                    case 'paid':
+                                                        $statusClass = 'payment-status-paid';
+                                                        $statusText = 'Paid';
+                                                        $statusColor = 'text-green-600';
+                                                        break;
+                                                    case 'pending_verification':
+                                                        $statusClass = 'payment-status-pending_verification';
+                                                        $statusText = 'Pending Verification';
+                                                        $statusColor = 'text-blue-600';
+                                                        break;
+                                                    case 'rejected':
+                                                        $statusClass = 'payment-status-rejected';
+                                                        $statusText = 'Rejected';
+                                                        $statusColor = 'text-red-600';
+                                                        break;
+                                                    default:
+                                                        $statusClass = 'payment-status-pending';
+                                                        $statusText = 'Unpaid';
+                                                        $statusColor = 'text-red-600';
+                                                }
+                                                ?>
+                                                <tr class="border-b <?= $statusClass ?>">
                                                     <td class="py-2 px-4">
                                                         <?= htmlspecialchars($payment['course_name']) ?> -
                                                         <?= $payment['fee_type'] === 'semester' ? 'Semester ' : 'Year ' ?>
@@ -355,29 +394,21 @@ $currentTab = $_GET['tab'] ?? 'payments';
                                                     <td class="py-2 px-4"><?= date('M d, Y', strtotime($payment['due_date'])) ?>
                                                     </td>
                                                     <td class="py-2 px-4">
-                                                        <span
-                                                            class="<?= $payment['status'] === 'paid' ? 'text-green-600' : 'text-red-600' ?>">
-                                                            <?= ucfirst($payment['status']) ?>
-                                                        </span>
+                                                        <span class="<?= $statusColor ?> font-medium"><?= $statusText ?></span>
                                                     </td>
                                                     <td class="py-2 px-4">
                                                         <?= $payment['paid_at'] ? date('M d, Y', strtotime($payment['paid_at'])) : '--' ?>
                                                     </td>
                                                     <td class="py-2 px-4">
-                                                        <?php if ($payment['status'] === 'unpaid'): ?>
-                                                            <form method="POST" action="student_bills.php" class="inline">
-                                                                <input type="hidden" name="bill_id" value="<?= $payment['id'] ?>">
-                                                                <input type="hidden" name="student_email"
-                                                                    value="<?= htmlspecialchars($selectedStudentEmail) ?>">
-                                                                <input type="hidden" name="tab" value="payments">
-                                                                <button type="submit" name="mark_paid"
-                                                                    class="text-green-600 hover:text-green-800">
-                                                                    <i class="fas fa-check mr-1"></i> Verify Payment
-                                                                </button>
-                                                            </form>
+                                                        <?php if ($payment['status'] === 'unpaid' || $payment['status'] === 'pending_verification'): ?>
+                                                            <button
+                                                                onclick="showPaymentProof('<?= $payment['id'] ?>', '<?= htmlspecialchars($payment['payment_proof']) ?>', '<?= $payment['status'] ?>')"
+                                                                class="text-blue-600 hover:text-blue-800 text-sm">
+                                                                <i class="fas fa-eye mr-1"></i> Verify
+                                                            </button>
                                                         <?php endif; ?>
                                                         <a href="generate_bill_pdf.php?id=<?= $payment['id'] ?>" target="_blank"
-                                                            class="text-green-600 hover:text-green-800 ml-2">
+                                                            class="text-green-600 hover:text-green-800 ml-2 text-sm">
                                                             <i class="fas fa-download mr-1"></i> Receipt
                                                         </a>
                                                     </td>
@@ -441,24 +472,34 @@ $currentTab = $_GET['tab'] ?? 'payments';
 
                     <?php
                     $unpaidBills = db_query("
-                            SELECT sb.*, u.name as student_name, u.email, 
-                                fs.fee_type, fs.period, c.course_name
-                            FROM student_bills sb
-                            JOIN users u ON sb.student_id = u.id
-                            JOIN fee_structures fs ON sb.fee_structure_id = fs.id
-                            JOIN courses c ON fs.course_id = c.id
-                            WHERE sb.status = 'unpaid'
-                            ORDER BY sb.due_date ASC
-                            LIMIT 10
-                        ")->fetchAll();
+                        SELECT sb.*, u.name as student_name, u.email, 
+                            fs.fee_type, fs.period, c.course_name,
+                            sb.payment_proof, sb.payment_verified
+                        FROM student_bills sb
+                        JOIN users u ON sb.student_id = u.id
+                        JOIN fee_structures fs ON sb.fee_structure_id = fs.id
+                        JOIN courses c ON fs.course_id = c.id
+                        WHERE sb.status IN ('unpaid', 'pending_verification')
+                        ORDER BY 
+                            CASE 
+                                WHEN sb.status = 'pending_verification' THEN 0 
+                                ELSE 1 
+                            END,
+                            sb.due_date ASC
+                        LIMIT 10
+                    ")->fetchAll();
                     ?>
 
                     <?php if (empty($unpaidBills)): ?>
                         <p class="text-gray-600">No unpaid bills found.</p>
                     <?php else: ?>
                         <div class="space-y-3">
-                            <?php foreach ($unpaidBills as $bill): ?>
-                                <div class="payment-status-pending p-4 rounded-md border">
+                            <?php foreach ($unpaidBills as $bill):
+                                $statusClass = $bill['status'] === 'pending_verification' ? 'payment-status-pending_verification' : 'payment-status-pending';
+                                $statusText = $bill['status'] === 'pending_verification' ? 'Pending Verification' : 'Unpaid';
+                                $statusColor = $bill['status'] === 'pending_verification' ? 'text-blue-600' : 'text-red-600';
+                                ?>
+                                <div class="<?= $statusClass ?> p-4 rounded-md border">
                                     <div class="flex justify-between items-center">
                                         <div>
                                             <h4 class="font-medium">
@@ -470,9 +511,15 @@ $currentTab = $_GET['tab'] ?? 'payments';
                                                 <?= $bill['fee_type'] === 'semester' ? 'Semester ' : 'Year ' ?>
                                                 <?= $bill['period'] ?>
                                             </p>
+                                            <p class="text-sm <?= $statusColor ?>">
+                                                <?= $statusText ?>
+                                                <?php if ($bill['status'] === 'pending_verification' && $bill['payment_proof']): ?>
+                                                    <span class="text-gray-500">(Proof submitted)</span>
+                                                <?php endif; ?>
+                                            </p>
                                         </div>
                                         <div class="text-right">
-                                            <p class="text-red-600 font-semibold">
+                                            <p class="font-semibold">
                                                 NPR <?= number_format($bill['amount'], 2) ?>
                                             </p>
                                             <p class="text-sm text-gray-500">
@@ -481,18 +528,13 @@ $currentTab = $_GET['tab'] ?? 'payments';
                                         </div>
                                     </div>
                                     <div class="flex justify-end mt-2 space-x-2">
-                                        <form method="POST" action="student_bills.php" class="inline">
-                                            <input type="hidden" name="bill_id" value="<?= $bill['id'] ?>">
-                                            <input type="hidden" name="student_email"
-                                                value="<?= htmlspecialchars($bill['email']) ?>">
-                                            <input type="hidden" name="tab" value="payments">
-                                            <button type="submit" name="mark_paid"
-                                                class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
-                                                <i class="fas fa-check mr-1"></i> Verify Payment
-                                            </button>
-                                        </form>
-                                        <a href="student_bills.php?student_id=<?= $bill['student_id'] ?>&student_email=<?= urlencode($bill['email']) ?>"
+                                        <button
+                                            onclick="showPaymentProof('<?= $bill['id'] ?>', '<?= htmlspecialchars($bill['payment_proof']) ?>', '<?= $bill['status'] ?>', '<?= $bill['email'] ?>')"
                                             class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+                                            <i class="fas fa-eye mr-1"></i> View Details
+                                        </button>
+                                        <a href="student_bills.php?student_id=<?= $bill['student_id'] ?>&student_email=<?= urlencode($bill['email']) ?>"
+                                            class="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">
                                             <i class="fas fa-user mr-1"></i> View Student
                                         </a>
                                     </div>
@@ -520,59 +562,138 @@ $currentTab = $_GET['tab'] ?? 'payments';
         </footer>
     </div>
 
+    <!-- Payment Verification Modal -->
+    <div id="paymentProofModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
+            <div class="flex justify-between items-center border-b p-4">
+                <h3 class="text-lg font-semibold">Payment Verification</h3>
+                <button onclick="closePaymentProofModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="mb-4">
+                    <h4 class="font-medium mb-2">Payment Proof:</h4>
+                    <div id="proofImageContainer" class="flex justify-center">
+                        <!-- Image will be inserted here by JavaScript -->
+                    </div>
+                </div>
+                <form id="verificationForm" method="POST" action="student_bills.php">
+                    <input type="hidden" name="bill_id" id="modalBillId">
+                    <input type="hidden" name="student_email" id="modalStudentEmail">
+
+                    <div class="flex justify-end space-x-3">
+                        <button type="submit" name="mark_rejected" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                            <i class="fas fa-times mr-1"></i> Reject
+                        </button>
+                        <button type="submit" name="mark_paid" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                            <i class="fas fa-check mr-1"></i> Accept
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Update both student ID and email when selection changes
+        // Update student email input based on dropdown
         function updateStudentSelection(select) {
             const selectedOption = select.options[select.selectedIndex];
             document.getElementById('student_email').value = selectedOption.dataset.email;
         }
-        // Tab switching with URL update
-function switchTab(tabId) {
-    // Get the tab content and button elements
-    const tabContent = document.getElementById(tabId);
-    const tabButton = event ? event.target : document.querySelector(`.tab-button[onclick="switchTab('${tabId}')"]`);
-    
-    // Only proceed if elements exist
-    if (tabContent && tabButton) {
-        // Update URL
-        const url = new URL(window.location);
-        url.searchParams.set('tab', tabId);
-        window.history.pushState({}, '', url);
 
-        // Update UI
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        tabContent.classList.add('active');
+        // Safe tab switch with support for direct URL load
+        function switchTab(tabId) {
+            const tabContent = document.getElementById(tabId);
+            const tabButton = event?.target || document.querySelector(`.tab-button[data-tab="${tabId}"]`);
 
-        document.querySelectorAll('.tab-button').forEach(btn => {
-            btn.classList.remove('active', 'border-blue-500', 'text-blue-600');
-            btn.classList.add('border-transparent', 'text-gray-500');
-        });
+            // Update URL
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabId);
+            window.history.pushState({}, '', url);
 
-        tabButton.classList.add('active', 'border-blue-500', 'text-blue-600');
-        tabButton.classList.remove('border-transparent', 'text-gray-500');
-    }
-}
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
 
-// Set initial tab from URL
-document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab');
-    if (tabParam) {
-        // Call switchTab without event parameter
-        switchTab(tabParam);
-    }
-});
-
-        // Confirm payment verification
-        function confirmPayment(form) {
-            if (confirm('Are you sure you want to verify this payment?')) {
-                form.submit();
+            // Show selected tab content
+            if (tabContent) {
+                tabContent.classList.add('active');
             }
-            return false;
+
+            // Reset all tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            // Highlight current tab button
+            if (tabButton) {
+                tabButton.classList.add('active', 'border-blue-500', 'text-blue-600');
+                tabButton.classList.remove('border-transparent', 'text-gray-500');
+            }
         }
+
+        // Show modal for payment proof
+        function showPaymentProof(billId, proofPath, currentStatus, studentEmail = '') {
+            const modal = document.getElementById('paymentProofModal');
+            const billIdInput = document.getElementById('modalBillId');
+            const studentEmailInput = document.getElementById('modalStudentEmail');
+            const proofContainer = document.getElementById('proofImageContainer');
+
+            // Set values
+            billIdInput.value = billId;
+            studentEmailInput.value = studentEmail || '<?= htmlspecialchars($selectedStudentEmail) ?>';
+
+            // Clear previous proof
+            proofContainer.innerHTML = '';
+
+            // Show image if available
+            if (proofPath) {
+                const img = document.createElement('img');
+                img.src = '../' + proofPath;
+                img.alt = 'Payment Proof';
+                img.className = 'proof-image';
+                proofContainer.appendChild(img);
+            } else {
+                proofContainer.innerHTML = '<p class="text-red-500">No payment proof uploaded</p>';
+            }
+
+            // Show buttons only for pending status
+            const acceptBtn = document.querySelector('#verificationForm [name="mark_paid"]');
+            const rejectBtn = document.querySelector('#verificationForm [name="mark_rejected"]');
+
+            if (currentStatus === 'pending_verification') {
+                acceptBtn.style.display = 'inline-block';
+                rejectBtn.style.display = 'inline-block';
+            } else {
+                acceptBtn.style.display = 'none';
+                rejectBtn.style.display = 'none';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closePaymentProofModal() {
+            document.getElementById('paymentProofModal').classList.add('hidden');
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('paymentProofModal');
+            if (event.target === modal) {
+                closePaymentProofModal();
+            }
+        };
+
+        // On page load: switch to correct tab from URL
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam) {
+                switchTab(tabParam);
+            }
+        });
     </script>
 </body>
-
 </html>

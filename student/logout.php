@@ -5,6 +5,6 @@ session_unset();
 session_destroy();
 
 // Redirect to index
-header("Location: ../public/index.php");
+header("Location: ../public/login.php");
 exit();
 ?>
