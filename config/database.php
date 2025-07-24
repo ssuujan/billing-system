@@ -19,8 +19,8 @@ try {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB");
 
-    // Create users table if not exists
-    $conn->exec("CREATE TABLE IF NOT EXISTS users (
+// Create users table if not exists
+$conn->exec("CREATE TABLE IF NOT EXISTS users (
         id INT(11) AUTO_INCREMENT PRIMARY KEY,
         student_id VARCHAR(20) UNIQUE,
         name VARCHAR(100) NOT NULL,
@@ -36,14 +36,14 @@ try {
         FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL
     ) ENGINE=InnoDB");
 
-    // Add student_id column if it doesn't exist
-    $stmt = $conn->query("SHOW COLUMNS FROM users LIKE 'student_id'");
-    if ($stmt->rowCount() == 0) {
-        $conn->exec("ALTER TABLE users ADD COLUMN student_id VARCHAR(20) UNIQUE AFTER id");
-    }
+// Add student_id column if it doesn't exist
+$stmt = $conn->query("SHOW COLUMNS FROM users LIKE 'student_id'");
+if ($stmt->rowCount() == 0) {
+    $conn->exec("ALTER TABLE users ADD COLUMN student_id VARCHAR(20) UNIQUE AFTER id");
+}
 
-    // Create course_subjects table if not exists
-    $conn->exec("CREATE TABLE IF NOT EXISTS course_subjects (
+// Create course_subjects table if not exists
+$conn->exec("CREATE TABLE IF NOT EXISTS course_subjects (
         id INT AUTO_INCREMENT PRIMARY KEY,
         course_id INT NOT NULL,
         year_or_semester INT NOT NULL,
@@ -53,9 +53,31 @@ try {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
     ) ENGINE=InnoDB");
+        // Create admin user if it doesn't exist
+        $stmt = $conn->query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
+        if ($stmt->fetchColumn() == 0) {
+            $hashedPassword = password_hash('admin123', PASSWORD_BCRYPT);
+            $conn->exec("INSERT INTO users (name, email, password, phone, address, role, approved, student_id) VALUES (
+                'Admin User',
+                'admin@example.com',
+                '$hashedPassword',
+                '1234567890',
+                'College Address',
+                'admin',
+                1,
+                'ADMIN001'
+            )");
+        }
+        
+        // foreach ($columnsToCheck as $column => $sql) {
+        //     $stmt = $conn->query("SHOW COLUMNS FROM student_bills LIKE '$column'");
+        //     if ($stmt->rowCount() == 0) {
+        //         $conn->exec($sql);
+        //     }
+        // }
 
-    // Create fee_structures table if not exists
-    $conn->exec("CREATE TABLE IF NOT EXISTS fee_structures (
+// Create fee_structures table if not exists
+$conn->exec("CREATE TABLE IF NOT EXISTS fee_structures (
         id INT AUTO_INCREMENT PRIMARY KEY,
         course_id INT NOT NULL,
         fee_type ENUM('semester', 'yearly') NOT NULL,
@@ -68,8 +90,8 @@ try {
         FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
     ) ENGINE=InnoDB");
 
-    // Create fee_installments table if not exists
-    $conn->exec("CREATE TABLE IF NOT EXISTS fee_installments (
+// Create fee_installments table if not exists
+$conn->exec("CREATE TABLE IF NOT EXISTS fee_installments (
         id INT AUTO_INCREMENT PRIMARY KEY,
         fee_structure_id INT NOT NULL,
         installment_number INT NOT NULL,
@@ -130,28 +152,6 @@ try {
         INDEX (created_at)
     ) ENGINE=InnoDB");
 
-    // Create admin user if it doesn't exist
-    $stmt = $conn->query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
-    if ($stmt->fetchColumn() == 0) {
-        $hashedPassword = password_hash('admin123', PASSWORD_BCRYPT);
-        $conn->exec("INSERT INTO users (name, email, password, phone, address, role, approved, student_id) VALUES (
-            'Admin User',
-            'admin@example.com',
-            '$hashedPassword',
-            '1234567890',
-            'College Address',
-            'admin',
-            1,
-            'ADMIN001'
-        )");
-    }
-
-    foreach ($columnsToCheck as $column => $sql) {
-        $stmt = $conn->query("SHOW COLUMNS FROM student_bills LIKE '$column'");
-        if ($stmt->rowCount() == 0) {
-            $conn->exec($sql);
-        }
-    }
     // Update existing students with generated student IDs if they don't have one
     $conn->exec("UPDATE users 
         SET student_id = CONCAT('STU', LPAD(id, 6, '0'), YEAR(CURRENT_DATE))
