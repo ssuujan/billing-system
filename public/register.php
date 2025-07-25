@@ -1,16 +1,12 @@
 <?php
-// Start output buffering at the VERY FIRST LINE
 ob_start();
-
 session_start();
 require_once __DIR__ . '/../config/database.php';
 
-// Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Collect all POST data with null coalescing for safety
     $post_data = [
         'name' => $_POST['name'] ?? '',
         'email' => $_POST['email'] ?? '',
@@ -18,10 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'confirm_password' => $_POST['confirm_password'] ?? '',
         'phone' => $_POST['phone'] ?? '',
         'address' => $_POST['address'] ?? '',
-        'course' => $_POST['course'] ?? ''
     ];
 
-    // Validate required fields
     $required_fields = ['name', 'email', 'password', 'confirm_password', 'phone', 'address'];
     foreach ($required_fields as $field) {
         if (empty($post_data[$field])) {
@@ -31,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Validate passwords match
     if ($post_data['password'] !== $post_data['confirm_password']) {
         $_SESSION['alert'] = "Passwords do not match!";
         header("Location: index.php");
@@ -39,10 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        // Check for existing email AND phone
         $check_email = $conn->prepare("SELECT email FROM users WHERE email = :email");
         $check_email->execute([':email' => $post_data['email']]);
-        
+
         $check_phone = $conn->prepare("SELECT phone FROM users WHERE phone = :phone");
         $check_phone->execute([':phone' => $post_data['phone']]);
 
@@ -58,11 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
-        // Insert with plaintext password (for school project only)
-        // Automatically assign 'student' role
-        $stmt = $conn->prepare("INSERT INTO users (name, email, password, phone, address, course, role) 
-                               VALUES (:name, :email, :password, :phone, :address, 'none', 'student')");
-        
+        // No hashing - store password as-is (⚠️ insecure for production)
+        $stmt = $conn->prepare("INSERT INTO users (name, email, password, phone, address, role) 
+                               VALUES (:name, :email, :password, :phone, :address, 'student')");
         $success = $stmt->execute([
             ':name' => $post_data['name'],
             ':email' => $post_data['email'],
@@ -72,39 +62,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
 
         if ($success) {
-            // Set success message in session
+            $lastInsertId = $conn->lastInsertId();
+            $student_id = 'STU' . str_pad($lastInsertId, 6, '0', STR_PAD_LEFT) . date('Y');
+
+            $update = $conn->prepare("UPDATE users SET student_id = :student_id WHERE id = :id");
+            $update->execute([
+                ':student_id' => $student_id,
+                ':id' => $lastInsertId
+            ]);
+
             $_SESSION['alert_success'] = "Registration successful! You can now login.";
-            
-            // Clear output buffer
+
             ob_end_clean();
-            
-            // Build absolute URL for redirect
+
             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
             $host = $_SERVER['HTTP_HOST'];
             $path = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
             $redirect_url = "$protocol://$host$path/login.php";
-            
-            // Force redirect
+
             header("HTTP/1.1 303 See Other");
             header("Location: $redirect_url");
             exit();
         } else {
-            throw new Exception("Registration failed - no database error but no rows inserted");
+            throw new Exception("Registration failed");
         }
 
-    } catch(PDOException $e) {
+    } catch (PDOException $e) {
         error_log("Database error: " . $e->getMessage());
         $_SESSION['alert'] = "Registration error. Please try again.";
         header("Location: index.php");
         exit();
-    } catch(Exception $e) {
+    } catch (Exception $e) {
         error_log("System error: " . $e->getMessage());
         $_SESSION['alert'] = "System error occurred. Please contact support.";
         header("Location: index.php");
         exit();
     }
 } else {
-    // Not a POST request - redirect to index
     header("Location: index.php");
     exit();
 }
+?>
