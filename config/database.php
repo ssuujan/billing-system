@@ -132,18 +132,18 @@ try {
     }
 
     // Create payment_history table
-    $conn->exec("CREATE TABLE IF NOT EXISTS payment_history (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        bill_id INT NOT NULL,
-        action ENUM('created', 'payment_submitted', 'verified', 'modified') NOT NULL,
-        changed_by INT NOT NULL COMMENT 'User ID of who made the change',
-        notes TEXT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (bill_id) REFERENCES student_bills(id) ON DELETE CASCADE,
-        FOREIGN KEY (changed_by) REFERENCES users(id),
-        INDEX (action),
-        INDEX (created_at)
-    ) ENGINE=InnoDB");
+    // $conn->exec("CREATE TABLE IF NOT EXISTS payment_history (
+    //     id INT AUTO_INCREMENT PRIMARY KEY,
+    //     bill_id INT NOT NULL,
+    //     action ENUM('created', 'payment_submitted', 'verified', 'modified') NOT NULL,
+    //     changed_by INT NOT NULL COMMENT 'User ID of who made the change',
+    //     notes TEXT NULL,
+    //     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    //     FOREIGN KEY (bill_id) REFERENCES student_bills(id) ON DELETE CASCADE,
+    //     FOREIGN KEY (changed_by) REFERENCES users(id),
+    //     INDEX (action),
+    //     INDEX (created_at)
+    // ) ENGINE=InnoDB");
 
     // Auto generate student_id for students
     $conn->exec("UPDATE users 
@@ -153,7 +153,6 @@ try {
 } catch (PDOException $e) {
     die("Database error: " . $e->getMessage());
 }
-
 // DB Query helper
 function db_query($sql, $params = []) {
     global $conn;

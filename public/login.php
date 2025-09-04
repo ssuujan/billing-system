@@ -1,5 +1,6 @@
 <?php
 
+session_name('STUDENT_SESSION');
 session_start();
 // Display success message if it exists
 if (isset($_SESSION['alert_success'])) {
@@ -20,7 +21,7 @@ if (isset($_SESSION['alert'])) {
     <title>Patan Multiple Campus</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> -->
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
         .action-buttons {
@@ -34,19 +35,6 @@ if (isset($_SESSION['alert'])) {
 </head>
 
 <body>
-    <?php if (isset($_SESSION['login_error'])): ?>
-        <div class="alert alert-error">
-            <?= htmlspecialchars($_SESSION['login_error']); ?>
-            <?php unset($_SESSION['login_error']); ?>
-        </div>
-    <?php endif; ?>
-
-    <?php if (isset($_SESSION['login_success'])): ?>
-        <div class="alert alert-success">
-            <?= htmlspecialchars($_SESSION['login_success']); ?>
-            <?php unset($_SESSION['login_success']); ?>
-        </div>
-    <?php endif; ?>
 
     <div class="navbar">
         <nav>
@@ -65,7 +53,21 @@ if (isset($_SESSION['alert'])) {
             </ul>
         </nav>
 
+
     </div>
+    <?php if (isset($_SESSION['login_error'])): ?>
+        <div style="color: red; font-weight: bold; margin: 10px 0;">
+            <?= htmlspecialchars($_SESSION['login_error']); ?>
+        </div>
+        <?php unset($_SESSION['login_error']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['login_success'])): ?>
+        <div style="color: green; font-weight: bold; margin: 10px 0;">
+            <?= htmlspecialchars($_SESSION['login_success']); ?>
+        </div>
+        <?php unset($_SESSION['login_success']); ?>
+    <?php endif; ?>
 
     <div class="container-outer">
 
@@ -82,29 +84,71 @@ if (isset($_SESSION['alert'])) {
                     <a href="login.php"><i class="fas fa-sign-in-alt"></i> Login</a>
                 </div>
 
+                <?php if (isset($_SESSION['login_error'])): ?>
+                    <div class="alert alert-error">
+                        <?= htmlspecialchars($_SESSION['login_error']); ?>
+                        <?php unset($_SESSION['login_error']); ?>
+                    </div>
+                <?php endif; ?>
 
+                <?php if (isset($_SESSION['login_success'])): ?>
+                    <div class="alert alert-success">
+                        <?= htmlspecialchars($_SESSION['login_success']); ?>
+                        <?php unset($_SESSION['login_success']); ?>
+                    </div>
+                <?php endif; ?>
 
-                <div class="login-form"> 
+                <div class="login-form">
+
                     <p class="regtext">Login to your account</p>
 
 
                     <form method="post" action="login_process.php" autocomplete="off">
-                      
+
                         <label for="email">Email:</label>
                         <input type="email" id="email" name="email" required><br>
                         <label for="password">Password:</label>
-                        <input type="password" id="password" name="password" required><br>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <input type="password" id="password" name="password" required
+                                style="padding-right: 35px; width: 100%; box-sizing: border-box;">
+
+                            <!-- Eye Icon Button -->
+                            <span id="togglePassword" style="
+              position: absolute;
+              right: 10px;
+              cursor: pointer;
+              font-size: 18px;
+              color: #555;
+              user-select: none;
+          ">
+                                👁️
+                            </span>
+                        </div>
+                        <br>
                         <button type="submit">Login</button>
 
+
+
+
                     </form>
+                </div>
+
             </div>
-
-
-
-
-
         </div>
-    </div>
+        <script>
+            const passwordInput = document.getElementById("password");
+            const togglePassword = document.getElementById("togglePassword");
+
+            togglePassword.addEventListener("click", function () {
+                const type = passwordInput.type === "password" ? "text" : "password";
+                passwordInput.type = type;
+
+                // Change eye icon based on state
+                togglePassword.textContent = type === "password" ? "👁️" : "🙈";
+            });
+        </script>
+
+
 
 </body>
 
