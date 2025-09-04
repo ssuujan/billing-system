@@ -123,58 +123,61 @@ if ($bill['status'] !== 'paid') {
     </div>';
 }
 
-// Payment methods section
-$qrCodePath = file_exists(__DIR__ . '/../../public/assets/images/payment-qr.png') ? 
-    'data:image/png;base64,' . base64_encode(file_get_contents(__DIR__ . '/../../public/assets/images/payment-qr.png')) : '';
+// Payment methods section (only show if bill is unpaid)
+$paymentMethods = '';
+if ($bill['status'] !== 'paid') {
+    $qrCodePath = file_exists(__DIR__ . '/../../public/assets/images/payment-qr.png') ? 
+        'data:image/png;base64,' . base64_encode(file_get_contents(__DIR__ . '/../../public/assets/images/payment-qr.png')) : '';
 
-$paymentMethods = '
-<div style="margin: 25px 0; page-break-inside: avoid;">
-    <h3 style="color: #2b6cb0; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 15px;">
-        Payment Options
-    </h3>
-    
-    <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px;">
-        <!-- QR Code Section -->
-        <div style="flex: 1; min-width: 200px;">
-            <h4 style="margin-top: 0; color: #4a5568;">Scan to Pay</h4>
-            <div style="border: 1px solid #ddd; padding: 10px; display: inline-block; background: white; text-align: center;">
-                ' . ($qrCodePath ? 
-                    '<img src="' . $qrCodePath . '" style="width: 150px; height: 150px;">' : 
-                    '<div style="width: 150px; height: 150px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
-                        QR Code
-                    </div>') . '
-                <p style="margin: 5px 0 0 0; font-size: 0.8em;">
-                    Scan with mobile banking app
-                </p>
-            </div>
-        </div>
+    $paymentMethods = '
+    <div style="margin: 25px 0; page-break-inside: avoid;">
+        <h3 style="color: #2b6cb0; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 15px;">
+            Payment Options
+        </h3>
         
-        <!-- Bank Details -->
-        <div style="flex: 2; min-width: 250px;">
-            <h4 style="margin-top: 0; color: #4a5568;">Bank Transfer</h4>
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
-                <table style="width: 100%;">
-                    <tr>
-                        <td style="padding: 5px 0; width: 120px;"><strong>Bank:</strong></td>
-                        <td style="padding: 5px 0;">Global IME Bank</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px 0;"><strong>Account:</strong></td>
-                        <td style="padding: 5px 0;">Patan Multiple Campus</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px 0;"><strong>A/C No:</strong></td>
-                        <td style="padding: 5px 0;">1234567890123456</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px 0;"><strong>Reference:</strong></td>
-                        <td style="padding: 5px 0;">STD-' . htmlspecialchars($student['student_id']) . '</td>
-                    </tr>
-                </table>
+        <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px;">
+            <!-- QR Code Section -->
+            <div style="flex: 1; min-width: 200px;">
+                <h4 style="margin-top: 0; color: #4a5568;">Scan to Pay</h4>
+                <div style="border: 1px solid #ddd; padding: 10px; display: inline-block; background: white; text-align: center;">
+                    ' . ($qrCodePath ? 
+                        '<img src="' . $qrCodePath . '" style="width: 150px; height: 150px;">' : 
+                        '<div style="width: 150px; height: 150px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                            QR Code
+                        </div>') . '
+                    <p style="margin: 5px 0 0 0; font-size: 0.8em;">
+                        Scan with mobile banking app
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Bank Details -->
+            <div style="flex: 2; min-width: 250px;">
+                <h4 style="margin-top: 0; color: #4a5568;">Bank Transfer</h4>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="padding: 5px 0; width: 120px;"><strong>Bank:</strong></td>
+                            <td style="padding: 5px 0;">Global IME Bank</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px 0;"><strong>Account:</strong></td>
+                            <td style="padding: 5px 0;">Patan Multiple Campus</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px 0;"><strong>A/C No:</strong></td>
+                            <td style="padding: 5px 0;">1234567890123456</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px 0;"><strong>Reference:</strong></td>
+                            <td style="padding: 5px 0;">STD-' . htmlspecialchars($student['student_id']) . '</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-</div>';
+    </div>';
+}
 
 // Footer
 $footer = '
